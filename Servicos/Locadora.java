@@ -19,6 +19,7 @@ public class Locadora {
         int opcao;
 
         do {
+            System.out.println("========================");
             System.out.println("Locadora de Veiculos");
             System.out.println("Escolha o que deseja: ");
             System.out.println("1 - Incluir no Sistema");
@@ -27,6 +28,7 @@ public class Locadora {
             System.out.println("4 - Listar");
             System.out.println("5 - Buscar por placa");
             System.out.println("0 - Sair");
+            System.out.print("Opçao: ");
             opcao = sc.nextInt();
             sc.nextLine();
             
@@ -55,10 +57,16 @@ public class Locadora {
     }
     
     public void incluir() {
-        System.out.println("Tipo (1 - Carro / 2 - Moto) :");
-        int tipo = sc.nextInt();
-        sc.nextLine();
-       
+        int tipo;
+        do {
+            System.out.println("Tipo (1 - Carro / 2 - Moto) :");
+            tipo = sc.nextInt();
+            sc.nextLine();
+            if (tipo != 1 && tipo != 2) {
+                System.out.println("Tipo de Veiculo Invalido. Tente novamente.");
+            }
+        } while (tipo != 1 && tipo != 2);
+
         System.out.print("Placa: ");
         String placa = sc.nextLine();
         System.out.print("Modelo: ");
