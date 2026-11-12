@@ -50,6 +50,7 @@ public class Locadora {
                     break;
                 case 0:
                     System.out.println("Saindo do Sistema");
+                    break;
                 default:
                     System.out.println("Opção Indisponível");
             }
@@ -168,7 +169,7 @@ public class Locadora {
         ArrayList<Veiculo> lista = repositorio.listar();
 
         for (int i = 0; i < lista.size(); i++) {
-            for (int j = 0; j < lista.size(); j++) {
+            for (int j = 0; j < lista.size() - 1; j++) {
                 if(lista.get(j).getAno() > lista.get(j + 1).getAno()) {
                     Veiculo v = lista.get(j);
                     lista.set(j, lista.get(j + 1));
