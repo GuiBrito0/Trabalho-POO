@@ -31,7 +31,7 @@ public class Locadora {
             System.out.print("Opçao: ");
             opcao = sc.nextInt();
             sc.nextLine();
-            
+                
             switch (opcao) {
                 case 1:
                     incluir();
@@ -97,8 +97,6 @@ public class Locadora {
             Moto moto = new Moto(placa, modelo, ano, valorDiaria, motor, cilindradas);
             repositorio.adicionar(moto);
             System.out.println("Moto registrada!");
-        } else {
-            System.out.println("Tipo de Veiculo Invalido.");
         }
     }
     
