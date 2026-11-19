@@ -100,7 +100,7 @@ public class Locadora {
         }
     }
     
-    public void alterar(){
+    public void alterar() {
         System.out.print("Informe a placa do veiculo: ");
         String placa = sc.nextLine();
         Veiculo v = repositorio.buscarPorPlaca(placa);
@@ -117,7 +117,6 @@ public class Locadora {
         } else {
             System.out.print("Veiculo não encontrado!");
         }
-
     }
 
     public void excluir () {
@@ -143,7 +142,6 @@ public class Locadora {
             Veiculo v = lista.get(i);
             System.out.printf("%-6s %-9s %-12s %-6d R$ %.2f%n", v.getTipo(), v.getPlaca(), v.getModelo(), v.getAno(), v.calcularDiaria());
         }
-        
     }
 
     public void buscar() {
@@ -172,8 +170,7 @@ public class Locadora {
                     Veiculo v = lista.get(j);
                     lista.set(j, lista.get(j + 1));
                     lista.set(j + 1, v);
-                }
-                
+                } 
             }
         }
     }
