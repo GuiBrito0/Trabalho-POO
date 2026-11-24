@@ -187,6 +187,26 @@ public class Locadora {
         }
     }
 
+    // Lê o CPF e já confere: formato inválido repete a pergunta, CPF não cadastrado devolve null.
+    private Cliente lerClienteCadastrado() {
+        String cpf = repetirAteValido(() -> Cliente.normalizarCpf(entrada.texto("CPF do cliente: ")));
+        Cliente cliente = clientes.buscarPorCpf(cpf);
+        if (cliente == null) {
+            System.out.println("Cliente não encontrado!");
+        }
+        return cliente;
+    }
+
+    // Mesma ideia para a placa: se não existe, a ação é interrompida na hora.
+    private Veiculo lerVeiculoCadastrado() {
+        String placa = repetirAteValido(() -> Veiculo.normalizarPlaca(entrada.texto("Placa do veiculo: ")));
+        Veiculo veiculo = veiculos.buscarPorPlaca(placa);
+        if (veiculo == null) {
+            System.out.println("Veiculo não encontrado!");
+        }
+        return veiculo;
+    }
+
     // ---------- veículos ----------
 
     private void incluirVeiculo() {
@@ -247,7 +267,11 @@ public class Locadora {
     }
 
     private void excluirVeiculo() {
-        servico.excluirVeiculo(entrada.texto("Informe a placa do Veiculo: "));
+        Veiculo veiculo = lerVeiculoCadastrado();
+        if (veiculo == null) {
+            return;
+        }
+        servico.excluirVeiculo(veiculo.getPlaca());
         System.out.println("Veiculo removido do sistema");
     }
 
@@ -288,6 +312,10 @@ public class Locadora {
     private void cadastrarCliente() {
         String nome = entrada.texto("Nome: ");
         String cpf = repetirAteValido(() -> Cliente.normalizarCpf(entrada.texto("CPF: ")));
+        if (clientes.buscarPorCpf(cpf) != null) {
+            System.out.println("Já existe um cliente com esse CPF!");
+            return;
+        }
         LocalDate nascimento = entrada.data("Data de nascimento (dd/MM/yyyy): ");
         Cnh cnh = repetirAteValido(() -> Cnh.de(entrada.texto("Categoria da CNH (A, B ou AB): ")));
 
@@ -308,19 +336,29 @@ public class Locadora {
     }
 
     private void excluirCliente() {
-        servico.excluirCliente(entrada.texto("Informe o CPF do cliente: "));
+        Cliente cliente = lerClienteCadastrado();
+        if (cliente == null) {
+            return;
+        }
+        servico.excluirCliente(cliente.getCpf());
         System.out.println("Cliente removido do sistema");
     }
 
     // ---------- locações ----------
 
     private void alugar() {
-        String cpf = entrada.texto("CPF do cliente: ");
-        String placa = entrada.texto("Placa do veiculo: ");
+        Cliente cliente = lerClienteCadastrado();
+        if (cliente == null) {
+            return;
+        }
+        Veiculo veiculo = lerVeiculoCadastrado();
+        if (veiculo == null) {
+            return;
+        }
         LocalDate retirada = entrada.dataOuHoje("Data de retirada (Enter = hoje): ");
         int dias = entrada.inteiro("Quantidade de dias: ");
 
-        Locacao l = servico.alugar(cpf, placa, retirada, dias);
+        Locacao l = servico.alugar(cliente.getCpf(), veiculo.getPlaca(), retirada, dias);
         System.out.println("Aluguel registrado!");
         System.out.println("Cliente: " + l.getCliente().getNome());
         System.out.println("Veiculo: " + l.getVeiculo().getModelo() + " (" + l.getVeiculo().getPlaca() + ")");
@@ -334,10 +372,13 @@ public class Locadora {
     }
 
     private void devolver() {
-        String placa = entrada.texto("Placa do veiculo: ");
+        Veiculo veiculo = lerVeiculoCadastrado();
+        if (veiculo == null) {
+            return;
+        }
         LocalDate data = entrada.dataOuHoje("Data da devolução (Enter = hoje): ");
 
-        Locacao l = servico.devolver(placa, data);
+        Locacao l = servico.devolver(veiculo.getPlaca(), data);
         System.out.println("Devolução registrada!");
         System.out.println("Dias contratados: " + l.getDiasContratados());
         System.out.printf("Aluguel: R$ %.2f%n", l.getValorAluguel());
@@ -369,7 +410,11 @@ public class Locadora {
     }
 
     private void relatorioHistorico() {
-        ArrayList<Locacao> historico = servico.historicoDoCliente(entrada.texto("CPF do cliente: "));
+        Cliente cliente = lerClienteCadastrado();
+        if (cliente == null) {
+            return;
+        }
+        ArrayList<Locacao> historico = servico.historicoDoCliente(cliente.getCpf());
         System.out.println();
         System.out.printf("%-9s %-12s %-12s %-12s %-10s%n", "PLACA", "MODELO", "RETIRADA", "DEVOLUCAO", "TOTAL");
         for (Locacao l : historico) {
