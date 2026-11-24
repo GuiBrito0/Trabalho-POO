@@ -8,10 +8,14 @@ import Entidades.Cnh;
 import Entidades.Locacao;
 import Entidades.Moto;
 import Entidades.Motor;
+import Excecoes.ClienteMenorDeIdadeException;
+import Excecoes.CnhIncompativelException;
 import Excecoes.DadoInvalidoException;
+import Excecoes.NaoEncontradoException;
 import Excecoes.RegistroDuplicadoException;
 import Excecoes.RegraDeNegocioException;
 import Excecoes.VeiculoIndisponivelException;
+import Servicos.LocacaoService;
 import Servicos.RepositorioClientes;
 import Servicos.RepositorioClientesEmMemoria;
 import Servicos.RepositorioLocacoes;
@@ -50,6 +54,17 @@ public class Testes {
         executar("locacaoAbertaDoVeiculo", Testes::locacaoAbertaDoVeiculo);
         executar("clienteTemLocacaoAberta", Testes::clienteTemLocacaoAberta);
         executar("historicoDoCliente", Testes::historicoDoCliente);
+        executar("alugarEDevolver", Testes::alugarEDevolver);
+        executar("veiculoAlugadoNaoAlugaDeNovo", Testes::veiculoAlugadoNaoAlugaDeNovo);
+        executar("cnhIncompativel", Testes::cnhIncompativel);
+        executar("menorDeIdade", Testes::menorDeIdade);
+        executar("idadeNoDiaDoAniversario", Testes::idadeNoDiaDoAniversario);
+        executar("naoEncontrados", Testes::naoEncontrados);
+        executar("excluirVeiculoAlugadoBloqueado", Testes::excluirVeiculoAlugadoBloqueado);
+        executar("excluirClienteComLocacaoAbertaBloqueado", Testes::excluirClienteComLocacaoAbertaBloqueado);
+        executar("devolverNaoAlugadoRecusa", Testes::devolverNaoAlugadoRecusa);
+        executar("devolverDuasVezesViaServicoRecusa", Testes::devolverDuasVezesViaServicoRecusa);
+        executar("relatorios", Testes::relatorios);
 
         System.out.println();
         System.out.println(total - falhas + "/" + total + " testes passaram");
@@ -320,5 +335,106 @@ public class Testes {
         repo.adicionar(new Locacao(outro, corolla(), RETIRADA, 3));
         igual(1, repo.doCliente("12345678909").size());
         igual(2, repo.listar().size());
+    }
+
+    // ---------- Task 6: serviço de locação ----------
+
+    static RepositorioVeiculos veiculosRepo;
+    static RepositorioClientes clientesRepo;
+
+    static LocacaoService servico() {
+        veiculosRepo = new RepositorioVeiculos();
+        clientesRepo = new RepositorioClientesEmMemoria();
+        veiculosRepo.adicionar(onix());
+        veiculosRepo.adicionar(new Moto("GHI9012", "CG 160", 2021, 60, motor(), 160));
+        clientesRepo.adicionar(ana());
+        clientesRepo.adicionar(new Cliente("Caio", "98765432100", LocalDate.of(1985, 7, 2), Cnh.A));
+        clientesRepo.adicionar(new Cliente("Bia", "11122233344", LocalDate.of(2008, 1, 1), Cnh.B));
+        clientesRepo.adicionar(new Cliente("Davi", "55566677788", LocalDate.of(2000, 5, 10), Cnh.B));
+        return new LocacaoService(veiculosRepo, clientesRepo, new RepositorioLocacoesEmMemoria());
+    }
+
+    static void alugarEDevolver() {
+        LocacaoService s = servico();
+        Locacao l = s.alugar("12345678909", "ABC1234", RETIRADA, 3);
+        verdadeiro(l.isAberta());
+        Locacao fechada = s.devolver("abc1234", RETIRADA.plusDays(3));
+        verdadeiro(!fechada.isAberta());
+        igual(360.0, fechada.getTotal());
+    }
+
+    static void veiculoAlugadoNaoAlugaDeNovo() {
+        LocacaoService s = servico();
+        s.alugar("12345678909", "ABC1234", RETIRADA, 3);
+        lanca(VeiculoIndisponivelException.class, () -> s.alugar("12345678909", "ABC1234", RETIRADA, 2));
+    }
+
+    static void cnhIncompativel() {
+        LocacaoService s = servico();
+        lanca(CnhIncompativelException.class, () -> s.alugar("12345678909", "GHI9012", RETIRADA, 2));
+        lanca(CnhIncompativelException.class, () -> s.alugar("98765432100", "ABC1234", RETIRADA, 2));
+    }
+
+    static void menorDeIdade() {
+        LocacaoService s = servico();
+        lanca(ClienteMenorDeIdadeException.class, () -> s.alugar("11122233344", "ABC1234", RETIRADA, 2));
+    }
+
+    static void idadeNoDiaDoAniversario() {
+        LocacaoService s = servico();
+        lanca(ClienteMenorDeIdadeException.class,
+                () -> s.alugar("55566677788", "ABC1234", LocalDate.of(2021, 5, 9), 2));
+        Locacao l = s.alugar("55566677788", "ABC1234", LocalDate.of(2021, 5, 10), 2);
+        verdadeiro(l.isAberta());
+    }
+
+    static void naoEncontrados() {
+        LocacaoService s = servico();
+        lanca(NaoEncontradoException.class, () -> s.alugar("00000000000", "ABC1234", RETIRADA, 2));
+        lanca(NaoEncontradoException.class, () -> s.alugar("12345678909", "ZZZ9999", RETIRADA, 2));
+    }
+
+    static void excluirVeiculoAlugadoBloqueado() {
+        LocacaoService s = servico();
+        s.alugar("12345678909", "ABC1234", RETIRADA, 3);
+        lanca(VeiculoIndisponivelException.class, () -> s.excluirVeiculo("ABC1234"));
+        s.devolver("ABC1234", RETIRADA.plusDays(3));
+        s.excluirVeiculo("ABC1234");
+        verdadeiro(veiculosRepo.buscarPorPlaca("ABC1234") == null);
+        lanca(NaoEncontradoException.class, () -> s.excluirVeiculo("ABC1234"));
+    }
+
+    static void excluirClienteComLocacaoAbertaBloqueado() {
+        LocacaoService s = servico();
+        s.alugar("12345678909", "ABC1234", RETIRADA, 3);
+        lanca(RegraDeNegocioException.class, () -> s.excluirCliente("12345678909"));
+        s.devolver("ABC1234", RETIRADA.plusDays(3));
+        s.excluirCliente("12345678909");
+        verdadeiro(clientesRepo.buscarPorCpf("12345678909") == null);
+    }
+
+    static void devolverNaoAlugadoRecusa() {
+        LocacaoService s = servico();
+        lanca(NaoEncontradoException.class, () -> s.devolver("ABC1234", RETIRADA));
+    }
+
+    static void devolverDuasVezesViaServicoRecusa() {
+        LocacaoService s = servico();
+        s.alugar("12345678909", "ABC1234", RETIRADA, 3);
+        s.devolver("ABC1234", RETIRADA.plusDays(3));
+        lanca(NaoEncontradoException.class, () -> s.devolver("ABC1234", RETIRADA.plusDays(3)));
+    }
+
+    static void relatorios() {
+        LocacaoService s = servico();
+        s.alugar("12345678909", "ABC1234", RETIRADA, 3);
+        igual(1, s.veiculosDisponiveis().size());
+        igual("GHI9012", s.veiculosDisponiveis().get(0).getPlaca());
+        igual(1, s.locacoesAbertas().size());
+        s.devolver("ABC1234", RETIRADA.plusDays(3));
+        s.alugar("12345678909", "ABC1234", RETIRADA.plusDays(4), 1);
+        igual(1, s.locacoesAbertas().size());
+        igual(2, s.historicoDoCliente("123.456.789-09").size());
+        lanca(NaoEncontradoException.class, () -> s.historicoDoCliente("00000000000"));
     }
 }
