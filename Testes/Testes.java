@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import Entidades.Carro;
 import Entidades.Cliente;
 import Entidades.Cnh;
+import Entidades.Locacao;
 import Entidades.Moto;
 import Entidades.Motor;
 import Excecoes.DadoInvalidoException;
@@ -26,6 +27,16 @@ public class Testes {
         executar("cpfFormatadoVirasoDigitos", Testes::cpfFormatadoVirasoDigitos);
         executar("clienteRejeitaDadosInvalidos", Testes::clienteRejeitaDadosInvalidos);
         executar("idadeNoAniversario", Testes::idadeNoAniversario);
+        executar("onixTresDias", Testes::onixTresDias);
+        executar("corollaSeisDiasSemDesconto", Testes::corollaSeisDiasSemDesconto);
+        executar("corollaSeteDiasComDesconto", Testes::corollaSeteDiasComDesconto);
+        executar("multaPorAtraso", Testes::multaPorAtraso);
+        executar("devolucaoNoPrazoSemMulta", Testes::devolucaoNoPrazoSemMulta);
+        executar("devolucaoAntecipadaCobraContratado", Testes::devolucaoAntecipadaCobraContratado);
+        executar("mesmoDiaUmaDiaria", Testes::mesmoDiaUmaDiaria);
+        executar("devolverAntesDaRetiradaRecusa", Testes::devolverAntesDaRetiradaRecusa);
+        executar("devolverDuasVezesRecusa", Testes::devolverDuasVezesRecusa);
+        executar("diariaCongelada", Testes::diariaCongelada);
 
         System.out.println();
         System.out.println(total - falhas + "/" + total + " testes passaram");
@@ -157,5 +168,86 @@ public class Testes {
         Cliente c = new Cliente("Ana", "12345678909", LocalDate.of(2000, 5, 10), Cnh.B);
         igual(20, c.idadeEm(LocalDate.of(2021, 5, 9)));
         igual(21, c.idadeEm(LocalDate.of(2021, 5, 10)));
+    }
+
+    // ---------- Task 4: locação ----------
+
+    static final LocalDate RETIRADA = LocalDate.of(2026, 11, 1);
+
+    static Cliente ana() {
+        return new Cliente("Ana", "12345678909", LocalDate.of(1990, 3, 15), Cnh.B);
+    }
+
+    static Carro onix() {
+        return new Carro("ABC1234", "Onix", 2022, 120, motor(), "Hatch");
+    }
+
+    static Carro corolla() {
+        return new Carro("DEF5678", "Corolla", 2023, 180, motor(), "Sedan");
+    }
+
+    static void onixTresDias() {
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 3);
+        l.devolver(l.getDataPrevista());
+        igual(360.0, l.getTotal());
+        igual(0.0, l.getDesconto());
+    }
+
+    static void corollaSeisDiasSemDesconto() {
+        Locacao l = new Locacao(ana(), corolla(), RETIRADA, 6);
+        l.devolver(l.getDataPrevista());
+        igual(1200.0, l.getTotal());
+    }
+
+    static void corollaSeteDiasComDesconto() {
+        Locacao l = new Locacao(ana(), corolla(), RETIRADA, 7);
+        l.devolver(l.getDataPrevista());
+        igual(1260.0, l.getValorAluguel());
+        igual(140.0, l.getDesconto());
+    }
+
+    static void multaPorAtraso() {
+        Locacao l = new Locacao(ana(), corolla(), RETIRADA, 7);
+        l.devolver(l.getDataPrevista().plusDays(2));
+        igual(2, l.getDiasAtraso());
+        igual(200.0, l.getMulta());
+        igual(1460.0, l.getTotal());
+    }
+
+    static void devolucaoNoPrazoSemMulta() {
+        Locacao l = new Locacao(ana(), corolla(), RETIRADA, 3);
+        l.devolver(l.getDataPrevista());
+        igual(0, l.getDiasAtraso());
+        igual(0.0, l.getMulta());
+    }
+
+    static void devolucaoAntecipadaCobraContratado() {
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 3);
+        l.devolver(RETIRADA.plusDays(1));
+        igual(360.0, l.getTotal());
+    }
+
+    static void mesmoDiaUmaDiaria() {
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 1);
+        l.devolver(RETIRADA);
+        igual(120.0, l.getTotal());
+    }
+
+    static void devolverAntesDaRetiradaRecusa() {
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 3);
+        lanca(DadoInvalidoException.class, () -> l.devolver(RETIRADA.minusDays(1)));
+    }
+
+    static void devolverDuasVezesRecusa() {
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 3);
+        l.devolver(RETIRADA.plusDays(3));
+        lanca(DadoInvalidoException.class, () -> l.devolver(RETIRADA.plusDays(3)));
+    }
+
+    static void diariaCongelada() {
+        Carro carro = onix();
+        Locacao l = new Locacao(ana(), carro, RETIRADA, 3);
+        carro.setValorDiaria(500);
+        igual(120.0, l.getDiariaAplicada());
     }
 }
