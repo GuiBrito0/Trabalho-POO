@@ -3,6 +3,7 @@ package Testes;
 import java.time.LocalDate;
 
 import Entidades.Carro;
+import Entidades.Cliente;
 import Entidades.Cnh;
 import Entidades.Moto;
 import Entidades.Motor;
@@ -22,6 +23,9 @@ public class Testes {
         executar("veiculoRejeitaDadosInvalidos", Testes::veiculoRejeitaDadosInvalidos);
         executar("diariaPorTipo", Testes::diariaPorTipo);
         executar("aceitaCnhPorTipo", Testes::aceitaCnhPorTipo);
+        executar("cpfFormatadoVirasoDigitos", Testes::cpfFormatadoVirasoDigitos);
+        executar("clienteRejeitaDadosInvalidos", Testes::clienteRejeitaDadosInvalidos);
+        executar("idadeNoAniversario", Testes::idadeNoAniversario);
 
         System.out.println();
         System.out.println(total - falhas + "/" + total + " testes passaram");
@@ -131,5 +135,27 @@ public class Testes {
         verdadeiro(moto.aceitaCnh(Cnh.A));
         verdadeiro(moto.aceitaCnh(Cnh.AB));
         verdadeiro(!moto.aceitaCnh(Cnh.B));
+    }
+
+    // ---------- Task 3: cliente ----------
+
+    static void cpfFormatadoVirasoDigitos() {
+        Cliente c = new Cliente("Ana", "123.456.789-09", LocalDate.of(1990, 3, 15), Cnh.B);
+        igual("12345678909", c.getCpf());
+    }
+
+    static void clienteRejeitaDadosInvalidos() {
+        LocalDate nasc = LocalDate.of(1990, 3, 15);
+        lanca(DadoInvalidoException.class, () -> new Cliente("Ana", "123", nasc, Cnh.B));
+        lanca(DadoInvalidoException.class, () -> new Cliente(" ", "12345678909", nasc, Cnh.B));
+        lanca(DadoInvalidoException.class,
+                () -> new Cliente("Ana", "12345678909", LocalDate.now().plusDays(1), Cnh.B));
+        lanca(DadoInvalidoException.class, () -> new Cliente("Ana", "12345678909", nasc, null));
+    }
+
+    static void idadeNoAniversario() {
+        Cliente c = new Cliente("Ana", "12345678909", LocalDate.of(2000, 5, 10), Cnh.B);
+        igual(20, c.idadeEm(LocalDate.of(2021, 5, 9)));
+        igual(21, c.idadeEm(LocalDate.of(2021, 5, 10)));
     }
 }
