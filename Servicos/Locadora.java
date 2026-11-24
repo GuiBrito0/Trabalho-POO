@@ -60,7 +60,7 @@ public class Locadora {
     public void incluir() {
         int tipo;
         do {
-            System.out.println("Tipo (1 - Carro / 2 - Moto) :");
+            System.out.println("Tipo (1 - Carro / 2 - Moto):");
             tipo = sc.nextInt();
             sc.nextLine();
             if (tipo != 1 && tipo != 2) {
@@ -110,12 +110,12 @@ public class Locadora {
             v.setModelo(sc.nextLine());
             System.out.print("Novo ano: ");
             v.setAno(sc.nextInt());
-            System.out.print("Novo valor da diaria:");
+            System.out.print("Novo valor da diaria: ");
             v.setValorDiaria(sc.nextDouble());
             sc.nextLine();
-            System.out.print("O veiculo foi alterado!");
+            System.out.println("O veiculo foi alterado!");
         } else {
-            System.out.print("Veiculo não encontrado!");
+            System.out.println("Veiculo não encontrado!");
         }
     }
 
