@@ -31,7 +31,7 @@ public class Locadora {
             System.out.print("Opçao: ");
             opcao = sc.nextInt();
             sc.nextLine();
-                
+
             switch (opcao) {
                 case 1:
                     incluir();
@@ -56,7 +56,7 @@ public class Locadora {
             }
         } while (opcao != 0);
     }
-    
+
     public void incluir() {
         int tipo;
         do {
@@ -99,7 +99,7 @@ public class Locadora {
             System.out.println("Moto registrada!");
         }
     }
-    
+
     public void alterar() {
         System.out.print("Informe a placa do veiculo: ");
         String placa = sc.nextLine();
@@ -119,10 +119,10 @@ public class Locadora {
         }
     }
 
-    public void excluir () {
+    public void excluir() {
         System.out.print("Informe a placa do Veiculo: ");
         String placa = sc.nextLine();
-        
+
         if (repositorio.remover(placa)) {
             System.out.println("Veiculo removido do sistema");
         } else {
@@ -132,7 +132,7 @@ public class Locadora {
 
     public void listar() {
         ordenarPorAno();
-        
+
         ArrayList<Veiculo> lista = repositorio.listar();
         System.out.println();
         System.out.printf("%-6s %-9s %-12s %-6s %-10s%n", "TIPO", "PLACA", "MODELO", "ANO", "DIARIA");
@@ -140,7 +140,8 @@ public class Locadora {
 
         for (int i = 0; i < lista.size(); i++) {
             Veiculo v = lista.get(i);
-            System.out.printf("%-6s %-9s %-12s %-6d R$ %.2f%n", v.getTipo(), v.getPlaca(), v.getModelo(), v.getAno(), v.calcularDiaria());
+            System.out.printf("%-6s %-9s %-12s %-6d R$ %.2f%n", v.getTipo(), v.getPlaca(), v.getModelo(), v.getAno(),
+                    v.calcularDiaria());
         }
     }
 
@@ -149,13 +150,13 @@ public class Locadora {
         String placa = sc.nextLine();
         Veiculo v = repositorio.buscarPorPlaca(placa);
 
-        if (v != null ) {
-        System.out.println("Tipo: " + v.getTipo());
-        System.out.println("Placa: " + v.getPlaca());
-        System.out.println("Modelo: " + v.getModelo());
-        System.out.println("Ano: " + v.getAno());
-        System.out.println("Motor: " + v.getMotor().getPotencia() + " cv - " + v.getMotor().getCombustivel());
-        System.out.printf("Diaria: R$ %.2f%n",v.calcularDiaria());
+        if (v != null) {
+            System.out.println("Tipo: " + v.getTipo());
+            System.out.println("Placa: " + v.getPlaca());
+            System.out.println("Modelo: " + v.getModelo());
+            System.out.println("Ano: " + v.getAno());
+            System.out.println("Motor: " + v.getMotor().getPotencia() + " cv - " + v.getMotor().getCombustivel());
+            System.out.printf("Diaria: R$ %.2f%n", v.calcularDiaria());
         } else {
             System.out.println("Veiculo não encontrado!");
         }
@@ -166,11 +167,11 @@ public class Locadora {
 
         for (int i = 0; i < lista.size(); i++) {
             for (int j = 0; j < lista.size() - 1; j++) {
-                if(lista.get(j).getAno() > lista.get(j + 1).getAno()) {
+                if (lista.get(j).getAno() > lista.get(j + 1).getAno()) {
                     Veiculo v = lista.get(j);
                     lista.set(j, lista.get(j + 1));
                     lista.set(j + 1, v);
-                } 
+                }
             }
         }
     }

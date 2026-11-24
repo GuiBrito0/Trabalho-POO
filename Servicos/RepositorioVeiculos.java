@@ -4,15 +4,15 @@ import java.util.ArrayList;
 
 import Entidades.Veiculo;
 
-public class RepositorioVeiculos implements Repositorio{
+public class RepositorioVeiculos implements Repositorio {
     private ArrayList<Veiculo> veiculos = new ArrayList<>();
-    
-    @Override 
+
+    @Override
     public void adicionar(Veiculo veiculo) {
         veiculos.add(veiculo);
     }
 
-    @Override 
+    @Override
     public boolean remover(String placa) {
         for (int i = 0; i < veiculos.size(); i++) {
             if (veiculos.get(i).getPlaca().equals(placa)) {
@@ -23,7 +23,7 @@ public class RepositorioVeiculos implements Repositorio{
         return false;
     }
 
-    @Override 
+    @Override
     public Veiculo buscarPorPlaca(String placa) {
         for (int i = 0; i < veiculos.size(); i++) {
             if (veiculos.get(i).getPlaca().equals(placa)) {
@@ -33,7 +33,7 @@ public class RepositorioVeiculos implements Repositorio{
         return null;
     }
 
-    @Override 
+    @Override
     public ArrayList<Veiculo> listar() {
         return veiculos;
     }

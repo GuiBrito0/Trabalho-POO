@@ -1,4 +1,5 @@
 package Entidades;
+
 public abstract class Veiculo {
     private String placa;
     private String modelo;
@@ -55,5 +56,6 @@ public abstract class Veiculo {
     }
 
     public abstract Double calcularDiaria();
+
     public abstract String getTipo();
 }

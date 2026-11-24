@@ -1,4 +1,5 @@
 package Entidades;
+
 public class Moto extends Veiculo {
     private int cilindradas;
 
@@ -14,7 +15,7 @@ public class Moto extends Veiculo {
     public void setCilindradas(int cilindradas) {
         this.cilindradas = cilindradas;
     }
-    
+
     @Override
     public Double calcularDiaria() {
         if (cilindradas > 500) {
@@ -22,7 +23,7 @@ public class Moto extends Veiculo {
         }
         return getValorDiaria();
     }
-    
+
     @Override
     public String getTipo() {
         return "Moto";
