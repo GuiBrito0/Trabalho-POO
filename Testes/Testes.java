@@ -1,6 +1,7 @@
 package Testes;
 
 import java.time.LocalDate;
+import java.util.Scanner;
 
 import Entidades.Carro;
 import Entidades.Cliente;
@@ -11,10 +12,12 @@ import Entidades.Motor;
 import Excecoes.ClienteMenorDeIdadeException;
 import Excecoes.CnhIncompativelException;
 import Excecoes.DadoInvalidoException;
+import Excecoes.EntradaEncerradaException;
 import Excecoes.NaoEncontradoException;
 import Excecoes.RegistroDuplicadoException;
 import Excecoes.RegraDeNegocioException;
 import Excecoes.VeiculoIndisponivelException;
+import Servicos.Entrada;
 import Servicos.LocacaoService;
 import Servicos.RepositorioClientes;
 import Servicos.RepositorioClientesEmMemoria;
@@ -65,6 +68,12 @@ public class Testes {
         executar("devolverNaoAlugadoRecusa", Testes::devolverNaoAlugadoRecusa);
         executar("devolverDuasVezesViaServicoRecusa", Testes::devolverDuasVezesViaServicoRecusa);
         executar("relatorios", Testes::relatorios);
+        executar("inteiroRepeteEmTexto", Testes::inteiroRepeteEmTexto);
+        executar("decimalComVirgula", Testes::decimalComVirgula);
+        executar("dataInvalidaRepete", Testes::dataInvalidaRepete);
+        executar("dataOuHojeComEnter", Testes::dataOuHojeComEnter);
+        executar("textoVazioRepete", Testes::textoVazioRepete);
+        executar("fimDaEntrada", Testes::fimDaEntrada);
 
         System.out.println();
         System.out.println(total - falhas + "/" + total + " testes passaram");
@@ -436,5 +445,35 @@ public class Testes {
         igual(1, s.locacoesAbertas().size());
         igual(2, s.historicoDoCliente("123.456.789-09").size());
         lanca(NaoEncontradoException.class, () -> s.historicoDoCliente("00000000000"));
+    }
+
+    // ---------- Task 7: entrada ----------
+
+    static Entrada entrada(String texto) {
+        return new Entrada(new Scanner(texto));
+    }
+
+    static void inteiroRepeteEmTexto() {
+        igual(5, entrada("abc\n5\n").inteiro("Numero: "));
+    }
+
+    static void decimalComVirgula() {
+        igual(12.5, entrada("12,5\n").decimal("Valor: "));
+    }
+
+    static void dataInvalidaRepete() {
+        igual(LocalDate.of(2024, 3, 5), entrada("31/02/2024\n05/03/2024\n").data("Data: "));
+    }
+
+    static void dataOuHojeComEnter() {
+        igual(LocalDate.now(), entrada("\n").dataOuHoje("Data: "));
+    }
+
+    static void textoVazioRepete() {
+        igual("Ana", entrada("\n  \nAna\n").texto("Nome: "));
+    }
+
+    static void fimDaEntrada() {
+        lanca(EntradaEncerradaException.class, () -> entrada("").inteiro("Numero: "));
     }
 }
