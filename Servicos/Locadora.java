@@ -154,7 +154,7 @@ public class Locadora {
         System.out.println("Placa: " + v.getPlaca());
         System.out.println("Modelo: " + v.getModelo());
         System.out.println("Ano: " + v.getAno());
-        System.out.println("Motor: " + v.getMotor().getPotencia() + " Cavalos: " + v.getMotor().getCombustivel());
+        System.out.println("Motor: " + v.getMotor().getPotencia() + " cv - " + v.getMotor().getCombustivel());
         System.out.printf("Diaria: R$ %.2f%n",v.calcularDiaria());
         } else {
             System.out.println("Veiculo não encontrado!");
