@@ -1,6 +1,11 @@
 package Testes;
 
+import java.time.LocalDate;
+
+import Entidades.Carro;
 import Entidades.Cnh;
+import Entidades.Moto;
+import Entidades.Motor;
 import Excecoes.DadoInvalidoException;
 import Excecoes.RegraDeNegocioException;
 import Excecoes.VeiculoIndisponivelException;
@@ -13,6 +18,10 @@ public class Testes {
         executar("cnhDeAceitaMinusculasEEspacos", Testes::cnhDeAceitaMinusculasEEspacos);
         executar("cnhDeRejeitaInvalida", Testes::cnhDeRejeitaInvalida);
         executar("excecoesSaoRegraDeNegocio", Testes::excecoesSaoRegraDeNegocio);
+        executar("placaNormalizada", Testes::placaNormalizada);
+        executar("veiculoRejeitaDadosInvalidos", Testes::veiculoRejeitaDadosInvalidos);
+        executar("diariaPorTipo", Testes::diariaPorTipo);
+        executar("aceitaCnhPorTipo", Testes::aceitaCnhPorTipo);
 
         System.out.println();
         System.out.println(total - falhas + "/" + total + " testes passaram");
@@ -46,6 +55,10 @@ public class Testes {
         }
     }
 
+    static void igual(double esperado, Number atual) {
+        igual(esperado, atual.doubleValue());
+    }
+
     static void verdadeiro(boolean condicao) {
         if (!condicao) {
             throw new AssertionError("condição era falsa");
@@ -76,5 +89,47 @@ public class Testes {
 
     static void excecoesSaoRegraDeNegocio() {
         verdadeiro(new VeiculoIndisponivelException("x") instanceof RegraDeNegocioException);
+    }
+
+    // ---------- Task 2: veículos ----------
+
+    static Motor motor() {
+        return new Motor(82, "Flex");
+    }
+
+    static void placaNormalizada() {
+        Carro c = new Carro(" abc1234 ", "Onix", 2022, 120, motor(), "Hatch");
+        igual("ABC1234", c.getPlaca());
+    }
+
+    static void veiculoRejeitaDadosInvalidos() {
+        int anoAtual = LocalDate.now().getYear();
+        lanca(DadoInvalidoException.class, () -> new Carro("ABC1234", "Onix", 1979, 120, motor(), "Hatch"));
+        lanca(DadoInvalidoException.class, () -> new Carro("ABC1234", "Onix", anoAtual + 2, 120, motor(), "Hatch"));
+        lanca(DadoInvalidoException.class, () -> new Carro("ABC1234", "Onix", 2022, 0, motor(), "Hatch"));
+        lanca(DadoInvalidoException.class, () -> new Carro("  ", "Onix", 2022, 120, motor(), "Hatch"));
+        lanca(DadoInvalidoException.class, () -> new Carro("ABC1234", "Onix", 2022, 120, motor(), "Esportivo"));
+        lanca(DadoInvalidoException.class, () -> new Motor(0, "Flex"));
+        lanca(DadoInvalidoException.class, () -> new Moto("GHI9012", "CG", 2021, 60, motor(), 0));
+    }
+
+    static void diariaPorTipo() {
+        igual(120.0, new Carro("AAA1111", "Onix", 2022, 120, motor(), "Hatch").calcularDiaria());
+        igual(200.0, new Carro("AAA1112", "Corolla", 2023, 180, motor(), "Sedan").calcularDiaria());
+        igual(300.0, new Carro("AAA1113", "Hilux", 2020, 250, motor(), "Picape").calcularDiaria());
+        igual(140.0, new Carro("AAA1114", "Compass", 2021, 100, motor(), "Suv").calcularDiaria());
+        igual(130.0, new Moto("BBB1111", "Grande", 2021, 100, motor(), 600).calcularDiaria());
+        igual(60.0, new Moto("BBB1112", "CG 160", 2021, 60, motor(), 160).calcularDiaria());
+    }
+
+    static void aceitaCnhPorTipo() {
+        Carro carro = new Carro("AAA1111", "Onix", 2022, 120, motor(), "Hatch");
+        verdadeiro(carro.aceitaCnh(Cnh.B));
+        verdadeiro(carro.aceitaCnh(Cnh.AB));
+        verdadeiro(!carro.aceitaCnh(Cnh.A));
+        Moto moto = new Moto("BBB1112", "CG 160", 2021, 60, motor(), 160);
+        verdadeiro(moto.aceitaCnh(Cnh.A));
+        verdadeiro(moto.aceitaCnh(Cnh.AB));
+        verdadeiro(!moto.aceitaCnh(Cnh.B));
     }
 }
