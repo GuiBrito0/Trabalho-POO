@@ -9,8 +9,14 @@ import Entidades.Locacao;
 import Entidades.Moto;
 import Entidades.Motor;
 import Excecoes.DadoInvalidoException;
+import Excecoes.RegistroDuplicadoException;
 import Excecoes.RegraDeNegocioException;
 import Excecoes.VeiculoIndisponivelException;
+import Servicos.RepositorioClientes;
+import Servicos.RepositorioClientesEmMemoria;
+import Servicos.RepositorioLocacoes;
+import Servicos.RepositorioLocacoesEmMemoria;
+import Servicos.RepositorioVeiculos;
 
 public class Testes {
     private static int falhas = 0;
@@ -37,6 +43,13 @@ public class Testes {
         executar("devolverAntesDaRetiradaRecusa", Testes::devolverAntesDaRetiradaRecusa);
         executar("devolverDuasVezesRecusa", Testes::devolverDuasVezesRecusa);
         executar("diariaCongelada", Testes::diariaCongelada);
+        executar("placaDuplicadaRecusada", Testes::placaDuplicadaRecusada);
+        executar("buscaPlacaIgnoraCaixaEEspacos", Testes::buscaPlacaIgnoraCaixaEEspacos);
+        executar("cpfDuplicadoRecusado", Testes::cpfDuplicadoRecusado);
+        executar("buscaCpfFormatado", Testes::buscaCpfFormatado);
+        executar("locacaoAbertaDoVeiculo", Testes::locacaoAbertaDoVeiculo);
+        executar("clienteTemLocacaoAberta", Testes::clienteTemLocacaoAberta);
+        executar("historicoDoCliente", Testes::historicoDoCliente);
 
         System.out.println();
         System.out.println(total - falhas + "/" + total + " testes passaram");
@@ -249,5 +262,63 @@ public class Testes {
         Locacao l = new Locacao(ana(), carro, RETIRADA, 3);
         carro.setValorDiaria(500);
         igual(120.0, l.getDiariaAplicada());
+    }
+
+    // ---------- Task 5: repositórios ----------
+
+    static void placaDuplicadaRecusada() {
+        RepositorioVeiculos repo = new RepositorioVeiculos();
+        repo.adicionar(onix());
+        lanca(RegistroDuplicadoException.class,
+                () -> repo.adicionar(new Carro("abc1234", "Outro", 2020, 100, motor(), "Hatch")));
+    }
+
+    static void buscaPlacaIgnoraCaixaEEspacos() {
+        RepositorioVeiculos repo = new RepositorioVeiculos();
+        repo.adicionar(onix());
+        verdadeiro(repo.buscarPorPlaca("abc1234 ") != null);
+        verdadeiro(repo.remover("abc1234"));
+        verdadeiro(repo.buscarPorPlaca("ABC1234") == null);
+    }
+
+    static void cpfDuplicadoRecusado() {
+        RepositorioClientes repo = new RepositorioClientesEmMemoria();
+        repo.adicionar(ana());
+        lanca(RegistroDuplicadoException.class, () -> repo.adicionar(
+                new Cliente("Outra", "123.456.789-09", LocalDate.of(1991, 1, 1), Cnh.A)));
+    }
+
+    static void buscaCpfFormatado() {
+        RepositorioClientes repo = new RepositorioClientesEmMemoria();
+        repo.adicionar(ana());
+        verdadeiro(repo.buscarPorCpf("123.456.789-09") != null);
+        verdadeiro(repo.buscarPorCpf("00000000000") == null);
+    }
+
+    static void locacaoAbertaDoVeiculo() {
+        RepositorioLocacoes repo = new RepositorioLocacoesEmMemoria();
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 3);
+        repo.adicionar(l);
+        verdadeiro(repo.abertaDoVeiculo("abc1234") == l);
+        l.devolver(RETIRADA.plusDays(3));
+        verdadeiro(repo.abertaDoVeiculo("ABC1234") == null);
+    }
+
+    static void clienteTemLocacaoAberta() {
+        RepositorioLocacoes repo = new RepositorioLocacoesEmMemoria();
+        Locacao l = new Locacao(ana(), onix(), RETIRADA, 3);
+        repo.adicionar(l);
+        verdadeiro(repo.clienteTemLocacaoAberta("123.456.789-09"));
+        l.devolver(RETIRADA.plusDays(3));
+        verdadeiro(!repo.clienteTemLocacaoAberta("12345678909"));
+    }
+
+    static void historicoDoCliente() {
+        RepositorioLocacoes repo = new RepositorioLocacoesEmMemoria();
+        Cliente outro = new Cliente("Caio", "98765432100", LocalDate.of(1985, 7, 2), Cnh.A);
+        repo.adicionar(new Locacao(ana(), onix(), RETIRADA, 3));
+        repo.adicionar(new Locacao(outro, corolla(), RETIRADA, 3));
+        igual(1, repo.doCliente("12345678909").size());
+        igual(2, repo.listar().size());
     }
 }
